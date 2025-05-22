@@ -7,13 +7,15 @@ import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.ptr.IntByReference;
 import ru.ilug.aumwindesktop.data.model.ApplicationInfo;
 
+import java.io.File;
+
 public class WindowsApplicationUtil {
 
     public static ApplicationInfo getFocusedApplicationInfo() {
         WinDef.HWND hwnd = User32.INSTANCE.GetForegroundWindow();
 
         String windowClass = getWindowClass(hwnd);
-        String exePath = getWindowExePath(hwnd);
+        String exePath = getWindowExecuteFile(hwnd);
 
         return new ApplicationInfo(exePath, windowClass);
     }
@@ -22,6 +24,11 @@ public class WindowsApplicationUtil {
         char[] className = new char[256];
         User32.INSTANCE.GetClassName(hwnd, className, className.length);
         return new String(className).trim();
+    }
+
+    public static String getWindowExecuteFile(WinDef.HWND hwnd) {
+        String path = getWindowExePath(hwnd);
+        return getFileFromPath(path);
     }
 
     public static String getWindowExePath(WinDef.HWND hwnd) {
@@ -37,5 +44,10 @@ public class WindowsApplicationUtil {
         char[] exePath = new char[4096];
         Psapi.INSTANCE.GetModuleFileNameExW(process, null, exePath, exePath.length);
         return new String(exePath).trim();
+    }
+
+    public static String getFileFromPath(String path) {
+        File file = new File(path);
+        return file.getName();
     }
 }
