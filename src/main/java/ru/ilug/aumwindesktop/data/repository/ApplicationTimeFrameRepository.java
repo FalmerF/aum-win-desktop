@@ -9,4 +9,5 @@ public interface ApplicationTimeFrameRepository extends JpaRepository<Applicatio
 
     ApplicationTimeFrame getApplicationTimeFrameByActive(boolean active);
 
+    void deleteAllByActive(boolean active);
 }

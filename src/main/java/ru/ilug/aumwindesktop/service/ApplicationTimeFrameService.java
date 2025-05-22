@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationInfo;
 import ru.ilug.aumwindesktop.data.model.ApplicationTimeFrame;
 import ru.ilug.aumwindesktop.data.repository.ApplicationTimeFrameRepository;
+import ru.ilug.aumwindesktop.web.ServiceWebApi;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 
 @Log4j2
 @Service
@@ -18,6 +20,7 @@ import java.util.Arrays;
 public class ApplicationTimeFrameService {
 
     private final ApplicationTimeFrameRepository repository;
+    private final ServiceWebApi serviceWebApi;
 
     @Transactional
     public void updateTime(ApplicationInfo applicationInfo) {
@@ -59,6 +62,24 @@ public class ApplicationTimeFrameService {
             repository.saveAll(Arrays.asList(timeFrame, prevTimeFrame));
         } else {
             repository.save(timeFrame);
+        }
+    }
+
+    @Transactional
+    public void postFrames() {
+        List<ApplicationTimeFrame> timeFrames = repository.findAll();
+
+        serviceWebApi.postTimeFrames(timeFrames);
+
+        ApplicationTimeFrame activeTimeFrame = timeFrames.stream().filter(ApplicationTimeFrame::isActive)
+                .findFirst().orElse(null);
+
+        if (activeTimeFrame != null) {
+            activeTimeFrame.setStartTime(activeTimeFrame.getEndTime());
+            repository.deleteAllByActive(false);
+            repository.save(activeTimeFrame);
+        } else {
+            repository.deleteAll();
         }
     }
 }
