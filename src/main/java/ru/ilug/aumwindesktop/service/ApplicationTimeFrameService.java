@@ -71,6 +71,15 @@ public class ApplicationTimeFrameService {
 
         serviceWebApi.postTimeFrames(timeFrames);
 
-        repository.deleteAll();
+        ApplicationTimeFrame activeTimeFrame = timeFrames.stream().filter(ApplicationTimeFrame::isActive)
+                .findFirst().orElse(null);
+
+        if (activeTimeFrame != null) {
+            activeTimeFrame.setStartTime(activeTimeFrame.getEndTime());
+            repository.deleteAllByActive(false);
+            repository.save(activeTimeFrame);
+        } else {
+            repository.deleteAll();
+        }
     }
 }
