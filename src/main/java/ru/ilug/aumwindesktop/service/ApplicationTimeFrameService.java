@@ -1,5 +1,6 @@
 package ru.ilug.aumwindesktop.service;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class ApplicationTimeFrameService {
     private final ServiceWebApi serviceWebApi;
 
     @Transactional
-    public void updateTime(ApplicationInfo applicationInfo) {
+    public void updateTime(@Nonnull ApplicationInfo applicationInfo) {
         ApplicationTimeFrame activeTimeFrame = repository.getApplicationTimeFrameByActive(true);
 
         if (isTimeFrameActual(activeTimeFrame) && activeTimeFrame.getExePath().equals(applicationInfo.getExePath())) {
