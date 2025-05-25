@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.data.model.ApplicationTimeFrame;
 
 import java.util.List;
@@ -27,5 +29,12 @@ public class ServiceWebApi {
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
+    }
+
+    public Flux<ApplicationStatistic> getStatistics() {
+        return webClient.get()
+                .uri("/timeframe/statistics")
+                .retrieve()
+                .bodyToFlux(ApplicationStatistic.class);
     }
 }
