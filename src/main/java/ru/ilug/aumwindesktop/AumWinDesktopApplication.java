@@ -1,5 +1,6 @@
 package ru.ilug.aumwindesktop;
 
+import atlantafx.base.theme.NordLight;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -39,6 +40,8 @@ public class AumWinDesktopApplication extends Application {
     @Override
     public void start(Stage stage) {
         this.primaryStage = stage;
+
+        Application.setUserAgentStylesheet(new NordLight().getUserAgentStylesheet());
 
         stage.setTitle("Application Usage Monitor");
 
@@ -103,10 +106,7 @@ public class AumWinDesktopApplication extends Application {
         PopupMenu popup = new PopupMenu();
 
         MenuItem showItem = new MenuItem("Open");
-        showItem.addActionListener(e -> {
-            log.info("Show item click");
-            Platform.runLater(this::showStage);
-        });
+        showItem.addActionListener(e -> Platform.runLater(this::showStage));
 
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.addActionListener(e -> {

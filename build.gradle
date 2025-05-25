@@ -32,6 +32,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'io.github.mkpaz:atlantafx-base:2.0.1'
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'net.java.dev.jna:jna-platform:5.17.0'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
