@@ -5,17 +5,23 @@ import com.sun.jna.platform.win32.Psapi;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.ptr.IntByReference;
+import jakarta.annotation.Nullable;
 import ru.ilug.aumwindesktop.data.model.ApplicationInfo;
 
 import java.io.File;
 
 public class WindowsApplicationUtil {
 
+    @Nullable
     public static ApplicationInfo getFocusedApplicationInfo() {
         WinDef.HWND hwnd = User32.INSTANCE.GetForegroundWindow();
 
         String windowClass = getWindowClass(hwnd);
         String exePath = getWindowExecuteFile(hwnd);
+
+        if (exePath.isBlank()) {
+            return null;
+        }
 
         return new ApplicationInfo(exePath, windowClass);
     }

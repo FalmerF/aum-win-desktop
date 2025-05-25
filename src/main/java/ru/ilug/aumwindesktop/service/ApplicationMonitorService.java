@@ -19,7 +19,9 @@ public class ApplicationMonitorService {
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.SECONDS)
     public void tick() {
         ApplicationInfo applicationInfo = WindowsApplicationUtil.getFocusedApplicationInfo();
-        applicationTimeFrameService.updateTime(applicationInfo);
+        if (applicationInfo != null) {
+            applicationTimeFrameService.updateTime(applicationInfo);
+        }
     }
 
     @Scheduled(fixedRate = 10, timeUnit = TimeUnit.SECONDS)
