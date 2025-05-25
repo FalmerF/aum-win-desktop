@@ -2,22 +2,29 @@ package ru.ilug.aumwindesktop;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.concurrent.CompletableFuture;
 
+@Log4j2
 @SpringBootApplication
 @EnableScheduling
 public class AumWinDesktopApplication extends Application {
 
     private static String[] args;
-    private static CompletableFuture<ApplicationContext> applicationContextFuture;
+    private static CompletableFuture<ConfigurableApplicationContext> applicationContextFuture;
+
+    @Getter
+    private static Stage primaryStage;
+    @Getter
+    private static Scene scene;
 
     public static void main(String[] args) {
         AumWinDesktopApplication.args = args;
@@ -25,16 +32,14 @@ public class AumWinDesktopApplication extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
-        stage.setTitle("Hello World!");
-        Button btn = new Button();
-        btn.setText("Say 'Hello World'");
-        btn.setOnAction(event -> System.out.println("Hello World!"));
+    public void start(Stage stage) {
+        primaryStage = stage;
+        primaryStage.setTitle("Application Usage Monitor");
 
-        StackPane root = new StackPane();
-        root.getChildren().add(btn);
-        stage.setScene(new Scene(root, 800, 600));
-        stage.show();
+        scene = new Scene(new FlowPane(), 800, 600);
+        primaryStage.setScene(scene);
+
+        primaryStage.show();
 
         stage.setOnCloseRequest(event -> {
             applicationContextFuture.thenAcceptAsync(SpringApplication::exit);
