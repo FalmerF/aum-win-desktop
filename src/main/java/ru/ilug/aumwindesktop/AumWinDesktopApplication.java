@@ -4,10 +4,11 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -21,11 +22,6 @@ public class AumWinDesktopApplication extends Application {
     private static String[] args;
     private static CompletableFuture<ConfigurableApplicationContext> applicationContextFuture;
 
-    @Getter
-    private static Stage primaryStage;
-    @Getter
-    private static Scene scene;
-
     public static void main(String[] args) {
         AumWinDesktopApplication.args = args;
         Application.launch(AumWinDesktopApplication.class, args);
@@ -33,18 +29,26 @@ public class AumWinDesktopApplication extends Application {
 
     @Override
     public void start(Stage stage) {
-        primaryStage = stage;
-        primaryStage.setTitle("Application Usage Monitor");
+        stage.setTitle("Application Usage Monitor");
 
-        scene = new Scene(new FlowPane(), 800, 600);
-        primaryStage.setScene(scene);
+        Scene scene = new Scene(new FlowPane(), 800, 600);
+        stage.setScene(scene);
 
-        primaryStage.show();
+        stage.show();
 
         stage.setOnCloseRequest(event -> {
             applicationContextFuture.thenAcceptAsync(SpringApplication::exit);
         });
 
-        applicationContextFuture = CompletableFuture.supplyAsync(() -> SpringApplication.run(AumWinDesktopApplication.class, args));
+        applicationContextFuture = CompletableFuture.supplyAsync(() -> {
+            return new SpringApplicationBuilder()
+                    .sources(AumWinDesktopApplication.class)
+                    .initializers(context -> {
+                        ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+                        beanFactory.registerSingleton("primaryStage", stage);
+                        beanFactory.registerSingleton("scene", scene);
+                    })
+                    .run(args);
+        });
     }
 }

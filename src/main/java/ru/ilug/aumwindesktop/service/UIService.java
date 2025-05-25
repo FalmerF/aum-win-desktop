@@ -1,13 +1,16 @@
 package ru.ilug.aumwindesktop.service;
 
+import jakarta.annotation.PostConstruct;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.AumWinDesktopApplication;
@@ -17,18 +20,17 @@ import ru.ilug.aumwindesktop.web.ServiceWebApi;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@RequiredArgsConstructor
 public class UIService {
 
     private final ServiceWebApi serviceWebApi;
-
     private final Stage primaryStage;
-    private final TableView<ApplicationStatistic> tableView;
+    private final Scene scene;
 
-    public UIService(ServiceWebApi serviceWebApi) {
-        this.serviceWebApi = serviceWebApi;
+    private TableView<ApplicationStatistic> tableView;
 
-        primaryStage = AumWinDesktopApplication.getPrimaryStage();
-
+    @PostConstruct
+    public void init() {
         FlowPane root = new FlowPane();
 
         tableView = new TableView<>();
@@ -46,7 +48,7 @@ public class UIService {
 
         root.getChildren().add(tableView);
 
-        Platform.runLater(() -> AumWinDesktopApplication.getScene().setRoot(root));
+        Platform.runLater(() -> scene.setRoot(root));
     }
 
     @Scheduled(fixedRate = 15, timeUnit = TimeUnit.SECONDS)
