@@ -2,6 +2,7 @@ package ru.ilug.aumwindesktop;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
@@ -12,6 +13,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 @Log4j2
@@ -30,6 +32,13 @@ public class AumWinDesktopApplication extends Application {
     @Override
     public void start(Stage stage) {
         stage.setTitle("Application Usage Monitor");
+
+        try {
+            Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")));
+            stage.getIcons().add(icon);
+        } catch (Exception e) {
+            log.error("Failed to load icon", e);
+        }
 
         Scene scene = new Scene(new FlowPane(), 800, 600);
         stage.setScene(scene);

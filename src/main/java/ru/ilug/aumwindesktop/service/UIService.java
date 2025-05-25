@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ru.ilug.aumwindesktop.AumWinDesktopApplication;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.web.ServiceWebApi;
 
