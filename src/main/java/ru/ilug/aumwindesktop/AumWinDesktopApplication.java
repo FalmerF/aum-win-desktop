@@ -1,6 +1,7 @@
 package ru.ilug.aumwindesktop;
 
 import atlantafx.base.theme.NordLight;
+import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -41,7 +42,7 @@ public class AumWinDesktopApplication extends Application {
     public void start(Stage stage) {
         this.primaryStage = stage;
 
-        Application.setUserAgentStylesheet(new NordLight().getUserAgentStylesheet());
+        Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
 
         stage.setTitle("Application Usage Monitor");
 
