@@ -1,6 +1,5 @@
 package ru.ilug.aumwindesktop.service;
 
-import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -19,7 +18,6 @@ public class AuthorizationFlowService {
 
     private final AuthCodeCallbackServer callbackServer;
     private final UserService userService;
-    private final UIService uiService;
 
     private final WebClient githubAuthClient;
 
@@ -33,7 +31,6 @@ public class AuthorizationFlowService {
     public AuthorizationFlowService(AuthCodeCallbackServer callbackServer, UserService userService, UIService uiService) {
         this.callbackServer = callbackServer;
         this.userService = userService;
-        this.uiService = uiService;
 
         githubAuthClient = WebClient.builder()
                 .baseUrl("https://github.com/login/oauth")
@@ -50,11 +47,10 @@ public class AuthorizationFlowService {
             try {
                 AuthCodeCallback codeCallback = callbackServer.start();
                 AccessTokenResponse response = exchangeCodeForToken(codeCallback);
-                userService.setToken(response.getAccessToken());
+                userService.updateToken(response.getAccessToken());
             } catch (Exception e) {
                 log.error("Error on authorization", e);
             } finally {
-                Platform.runLater(uiService::updateHeaderState);
                 active = false;
                 callbackServer.stop();
             }

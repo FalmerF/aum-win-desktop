@@ -21,13 +21,14 @@ import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.data.model.User;
+import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
 import ru.ilug.aumwindesktop.web.ServiceWebApi;
 
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -49,8 +50,6 @@ public class UIService {
         header = createHeader(root);
         tableView = createStatisticTable(root);
 
-        updateHeaderState();
-
         root.getChildren().addAll(header, tableView);
 
         Platform.runLater(() -> scene.setRoot(root));
@@ -64,18 +63,6 @@ public class UIService {
         header.setStyle("-fx-background-color: -color-base-1;");
 
         return header;
-    }
-
-    public void updateHeaderState() {
-        UserService userService = context.getBean(UserService.class);
-
-        header.getChildren().clear();
-
-        if(userService.isAuthorized()) {
-            header.getChildren().add(createAvatar(userService.getUser()));
-        } else {
-            header.getChildren().add(createLoginButton());
-        }
     }
 
     private Button createLoginButton() {
@@ -136,13 +123,23 @@ public class UIService {
         return column;
     }
 
-    @Scheduled(fixedRate = 15, timeUnit = TimeUnit.SECONDS)
-    public void getStatistics() {
-        serviceWebApi.getStatistics()
-                .collectList()
-                .subscribe(statistics -> {
-                    ObservableList<ApplicationStatistic> list = FXCollections.observableArrayList(statistics);
-                    Platform.runLater(() -> tableView.setItems(list));
-                });
+    @EventListener
+    public void onAuthStatusUpdate(AuthStatusUpdateEvent event) {
+        Platform.runLater(() -> updateHeaderState(event.isAuthorized(), event.getUser()));
+    }
+
+    public void updateHeaderState(boolean authorized, User user) {
+        header.getChildren().clear();
+
+        if (authorized) {
+            header.getChildren().add(createAvatar(user));
+        } else {
+            header.getChildren().add(createLoginButton());
+        }
+    }
+
+    public void updateStatisticsTable(List<ApplicationStatistic> statistics) {
+        ObservableList<ApplicationStatistic> list = FXCollections.observableArrayList(statistics);
+        Platform.runLater(() -> tableView.setItems(list));
     }
 }

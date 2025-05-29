@@ -3,10 +3,14 @@ package ru.ilug.aumwindesktop.service;
 import com.sun.jna.platform.win32.Crypt32Util;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.ilug.aumwindesktop.data.model.User;
+import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,34 +23,45 @@ public class UserService {
 
     private static final Path TOKEN_PATH = Path.of("./token");
 
+    private final ApplicationEventPublisher eventPublisher;
+
     private final WebClient githubClient;
 
     private String token;
     @Getter
     private User user;
 
-    public UserService() {
+    public UserService(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+
         this.githubClient = WebClient.builder()
                 .baseUrl("https://api.github.com")
                 .build();
+    }
 
-        token = loadTokenFromSecureFile();
+    @EventListener(ContextRefreshedEvent.class)
+    public void onContextRefreshed() {
+        setToken(loadTokenFromSecureFile());
+    }
 
-        if (token != null) {
-            updateUserInformation();
+    public void updateToken(String token) {
+        setToken(token);
+        try {
+            saveTokenToSecureFile();
+        } catch (Exception e) {
+            log.error("Error on save access token");
         }
     }
 
     public void setToken(String token) {
         this.token = token;
 
-        try {
-            saveTokenToSecureFile();
-        } catch (Exception e) {
-            log.error("Error on save access token");
+        if (token != null) {
+            updateUserInformation();
         }
 
-        updateUserInformation();
+        AuthStatusUpdateEvent event = new AuthStatusUpdateEvent(this, user, token, isAuthorized());
+        eventPublisher.publishEvent(event);
     }
 
     public boolean isAuthorized() {
@@ -78,6 +93,8 @@ public class UserService {
     }
 
     private void updateUserInformation() {
+        user = null;
+
         try {
             user = githubClient.get()
                     .uri("/user")
@@ -88,8 +105,18 @@ public class UserService {
                     .block();
         } catch (Exception e) {
             log.error("Error on get user information", e);
-            user = null;
         }
     }
 
+    private void invalidateToken() {
+        if (Files.exists(TOKEN_PATH)) {
+            try {
+                Files.delete(TOKEN_PATH);
+            } catch (Exception ignore) {
+            }
+        }
+
+        user = null;
+        setToken(null);
+    }
 }

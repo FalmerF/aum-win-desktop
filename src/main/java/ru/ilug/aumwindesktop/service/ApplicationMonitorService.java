@@ -1,11 +1,16 @@
 package ru.ilug.aumwindesktop.service;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationInfo;
+import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.util.WindowsApplicationUtil;
+import ru.ilug.aumwindesktop.web.ServiceWebApi;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,6 +20,9 @@ import java.util.concurrent.TimeUnit;
 public class ApplicationMonitorService {
 
     private final ApplicationTimeFrameService applicationTimeFrameService;
+    private final UserService userService;
+    private final ServiceWebApi serviceWebApi;
+    private final UIService uiService;
 
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.SECONDS)
     public void tick() {
@@ -26,7 +34,18 @@ public class ApplicationMonitorService {
 
     @Scheduled(fixedRate = 10, timeUnit = TimeUnit.SECONDS)
     public void postFrames() {
-        applicationTimeFrameService.postFrames();
+        if (userService.isAuthorized()) {
+            applicationTimeFrameService.postFrames();
+        }
+    }
+
+    @Scheduled(fixedRate = 15, timeUnit = TimeUnit.SECONDS)
+    public void getStatistics() {
+        if (userService.isAuthorized()) {
+            serviceWebApi.getStatistics()
+                    .collectList()
+                    .subscribe(uiService::updateStatisticsTable);
+        }
     }
 
 }
