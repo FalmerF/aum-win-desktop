@@ -11,15 +11,13 @@ import ru.ilug.aumwindesktop.data.model.AccessTokenResponse;
 import ru.ilug.aumwindesktop.data.model.AuthCodeCallback;
 import ru.ilug.aumwindesktop.web.AuthCodeCallbackServer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Slf4j
 @Lazy
 @Service
 public class AuthorizationFlowService {
 
     private final AuthCodeCallbackServer callbackServer;
+    private final UserService userService;
 
     private final WebClient githubAuthClient;
 
@@ -30,8 +28,9 @@ public class AuthorizationFlowService {
 
     private boolean active;
 
-    public AuthorizationFlowService(AuthCodeCallbackServer callbackServer) {
+    public AuthorizationFlowService(AuthCodeCallbackServer callbackServer, UserService userService) {
         this.callbackServer = callbackServer;
+        this.userService = userService;
 
         githubAuthClient = WebClient.builder()
                 .baseUrl("https://github.com/login/oauth")
@@ -48,8 +47,7 @@ public class AuthorizationFlowService {
             try {
                 AuthCodeCallback codeCallback = callbackServer.start();
                 AccessTokenResponse response = exchangeCodeForToken(codeCallback);
-                log.info("Auth response: {}", response);
-
+                userService.setToken(response.getAccessToken());
             } catch (Exception e) {
                 log.error("Error on authorization", e);
             } finally {
