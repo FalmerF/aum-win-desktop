@@ -1,6 +1,5 @@
 package ru.ilug.aumwindesktop.service;
 
-import atlantafx.base.controls.Popover;
 import jakarta.annotation.PostConstruct;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -16,6 +15,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class UIService {
 
+    private final ApplicationContext context;
     private final ServiceWebApi serviceWebApi;
     private final Stage primaryStage;
     private final Scene scene;
@@ -40,6 +41,10 @@ public class UIService {
         Button loginButton = new Button("Login via GitHub");
         loginButton.setDefaultButton(true);
         loginButton.setAlignment(Pos.CENTER);
+        loginButton.setOnMouseClicked(event -> {
+            AuthorizationFlowService authFlow = context.getBean(AuthorizationFlowService.class);
+            authFlow.start();
+        });
 
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(10));
