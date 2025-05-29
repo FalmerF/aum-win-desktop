@@ -55,7 +55,7 @@ public class AuthCodeCallbackServer {
 
             codeFuture.complete(parameters.get("code"));
 
-            String response = "Auth complete";
+            String response = "You can close this page and return to the app";
             exchange.sendResponseHeaders(200, response.length());
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(response.getBytes());
