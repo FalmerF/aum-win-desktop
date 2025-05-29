@@ -39,35 +39,43 @@ public class UIService {
     private final Stage primaryStage;
     private final Scene scene;
 
+    private VBox header;
     private TableView<ApplicationStatistic> tableView;
 
     @PostConstruct
     public void init() {
         VBox root = new VBox();
 
-        VBox vbox = createHeader(root);
+        header = createHeader(root);
         tableView = createStatisticTable(root);
 
-        root.getChildren().addAll(vbox, tableView);
+        updateHeaderState();
+
+        root.getChildren().addAll(header, tableView);
 
         Platform.runLater(() -> scene.setRoot(root));
     }
 
     private VBox createHeader(VBox root) {
-        VBox vbox = new VBox();
-        vbox.setPadding(new Insets(10));
-        vbox.prefWidthProperty().bind(root.widthProperty());
-        vbox.setAlignment(Pos.CENTER_RIGHT);
-        vbox.setStyle("-fx-background-color: -color-base-1;");
+        VBox header = new VBox();
+        header.setPadding(new Insets(10));
+        header.prefWidthProperty().bind(root.widthProperty());
+        header.setAlignment(Pos.CENTER_RIGHT);
+        header.setStyle("-fx-background-color: -color-base-1;");
 
+        return header;
+    }
+
+    public void updateHeaderState() {
         UserService userService = context.getBean(UserService.class);
-        if(userService.isAuthorized()) {
-            vbox.getChildren().add(createAvatar(userService.getUser()));
-        } else {
-            vbox.getChildren().add(createLoginButton());
-        }
 
-        return vbox;
+        header.getChildren().clear();
+
+        if(userService.isAuthorized()) {
+            header.getChildren().add(createAvatar(userService.getUser()));
+        } else {
+            header.getChildren().add(createLoginButton());
+        }
     }
 
     private Button createLoginButton() {
@@ -77,6 +85,8 @@ public class UIService {
         button.setOnMouseClicked(event -> {
             AuthorizationFlowService authFlow = context.getBean(AuthorizationFlowService.class);
             authFlow.start();
+
+            button.setDisable(true);
         });
 
         return button;
