@@ -17,8 +17,4 @@ public class ApplicationStatistic {
     private String exePath;
     private long seconds;
 
-    public String getTime() {
-        return TimeUtil.formatSeconds(seconds);
-    }
-
 }

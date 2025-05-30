@@ -35,8 +35,8 @@ public class ApplicationMonitorService {
         }
     }
 
-    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.SECONDS)
-    public void getStatistics() {
+    @Scheduled(fixedRate = 15, initialDelay = 5, timeUnit = TimeUnit.SECONDS)
+    public void updateStatistics() {
         if (userService.isAuthorized() && uiService.isShowing()) {
             serviceWebApi.getStatistics()
                     .collectList()

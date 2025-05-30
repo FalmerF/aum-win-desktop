@@ -4,9 +4,12 @@ import atlantafx.base.theme.NordLight;
 import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -15,6 +18,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.ilug.aumwindesktop.service.ApplicationMonitorService;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -53,7 +57,14 @@ public class AumWinDesktopApplication extends Application {
             log.error("Failed to load icon", e);
         }
 
-        Scene scene = new Scene(new FlowPane(), 800, 600);
+        Text text = new Text("Starting application...");
+        text.setStyle("-fx-font-size: 20;");
+
+        VBox vBox = new VBox();
+        vBox.setAlignment(Pos.CENTER);
+        vBox.getChildren().add(text);
+
+        Scene scene = new Scene(vBox, 800, 600);
         stage.setScene(scene);
 
         setupTrayIcon();
@@ -133,6 +144,9 @@ public class AumWinDesktopApplication extends Application {
         if (primaryStage != null) {
             primaryStage.show();
             primaryStage.toFront();
+
+            applicationContextFuture.thenAccept(context ->
+                    context.getBean(ApplicationMonitorService.class).updateStatistics());
         }
     }
 }

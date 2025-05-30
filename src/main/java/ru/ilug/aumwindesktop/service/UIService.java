@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.data.model.User;
 import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
+import ru.ilug.aumwindesktop.util.TimeUtil;
 
 import java.util.List;
 
@@ -105,20 +107,33 @@ public class UIService {
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableView.prefWidthProperty().bind(root.widthProperty());
 
-        tableView.getColumns().addAll(
-                createStatisticTableColumn("exePath", "Exe Path"),
-                createStatisticTableColumn("time", "Time")
-        );
+        TableColumn<ApplicationStatistic, String> pathColumn = new TableColumn<>("Application");
+        pathColumn.setCellValueFactory(new PropertyValueFactory<>("exePath"));
+        pathColumn.setReorderable(false);
+
+        TableColumn<ApplicationStatistic, Long> timeColumn = new TableColumn<>("Time");
+        timeColumn.setCellValueFactory(new PropertyValueFactory<>("seconds"));
+        timeColumn.setReorderable(false);
+        timeColumn.setSortType(TableColumn.SortType.DESCENDING);
+        timeColumn.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(Long value, boolean empty) {
+                super.updateItem(value, empty);
+
+                if (empty || value == null) {
+                    setText(TimeUtil.formatSeconds(0));
+                } else {
+                    setText(TimeUtil.formatSeconds(value));
+                }
+            }
+        });
+
+        tableView.getSortOrder().add(timeColumn);
+        tableView.getColumns().addAll(pathColumn, timeColumn);
 
         VBox.setVgrow(tableView, Priority.ALWAYS);
 
         return tableView;
-    }
-
-    private TableColumn<ApplicationStatistic, String> createStatisticTableColumn(String name, String displayName) {
-        TableColumn<ApplicationStatistic, String> column = new TableColumn<>(displayName);
-        column.setCellValueFactory(new PropertyValueFactory<>(name));
-        return column;
     }
 
     @EventListener
@@ -138,7 +153,10 @@ public class UIService {
 
     public void updateStatisticsTable(List<ApplicationStatistic> statistics) {
         ObservableList<ApplicationStatistic> list = FXCollections.observableArrayList(statistics);
-        Platform.runLater(() -> tableView.setItems(list));
+        Platform.runLater(() -> {
+            tableView.getItems().setAll(list);
+            tableView.sort();
+        });
     }
 
     public boolean isShowing() {
