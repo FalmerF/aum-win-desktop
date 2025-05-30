@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.data.model.User;
 import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
-import ru.ilug.aumwindesktop.web.ServiceWebApi;
 
 import java.util.List;
 
@@ -36,7 +35,6 @@ import java.util.List;
 public class UIService {
 
     private final ApplicationContext context;
-    private final ServiceWebApi serviceWebApi;
     private final Stage primaryStage;
     private final Scene scene;
 
@@ -141,5 +139,9 @@ public class UIService {
     public void updateStatisticsTable(List<ApplicationStatistic> statistics) {
         ObservableList<ApplicationStatistic> list = FXCollections.observableArrayList(statistics);
         Platform.runLater(() -> tableView.setItems(list));
+    }
+
+    public boolean isShowing() {
+        return primaryStage.isShowing();
     }
 }
