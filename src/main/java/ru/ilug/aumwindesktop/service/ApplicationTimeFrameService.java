@@ -7,13 +7,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationInfo;
+import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.data.model.ApplicationTimeFrame;
 import ru.ilug.aumwindesktop.data.repository.ApplicationTimeFrameRepository;
 import ru.ilug.aumwindesktop.web.ServiceWebApi;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -32,6 +33,40 @@ public class ApplicationTimeFrameService {
         } else {
             startTimeFrame(activeTimeFrame, applicationInfo);
         }
+    }
+
+    @Transactional
+    public void postFrames() {
+        List<ApplicationTimeFrame> timeFrames = repository.findAll();
+
+        serviceWebApi.postTimeFrames(timeFrames);
+
+        ApplicationTimeFrame activeTimeFrame = timeFrames.stream().filter(ApplicationTimeFrame::isActive)
+                .findFirst().orElse(null);
+
+        if (activeTimeFrame != null) {
+            activeTimeFrame.setStartTime(activeTimeFrame.getEndTime());
+            repository.deleteAllByActive(false);
+            repository.save(activeTimeFrame);
+        } else {
+            repository.deleteAll();
+        }
+    }
+
+    public List<ApplicationStatistic> addLocalStatistics(List<ApplicationStatistic> statisticsList) {
+        List<ApplicationTimeFrame> timeFrames = repository.findAll();
+        Map<String, ApplicationStatistic> statistics = statisticsList.stream()
+                .map(s -> new ApplicationStatistic(s.getExePath(), s.getSeconds()))
+                .collect(Collectors.toMap(ApplicationStatistic::getExePath, s -> s));
+
+        for (ApplicationTimeFrame frame : timeFrames) {
+            long seconds = (frame.getEndTime() - frame.getStartTime()) / 1000;
+
+            ApplicationStatistic statistic = statistics.computeIfAbsent(frame.getExePath(), key -> new ApplicationStatistic(key, 0));
+            statistic.addSeconds(seconds);
+        }
+
+        return new ArrayList<>(statistics.values());
     }
 
     private boolean isTimeFrameActual(ApplicationTimeFrame timeFrame) {
@@ -63,24 +98,6 @@ public class ApplicationTimeFrameService {
             repository.saveAll(Arrays.asList(timeFrame, prevTimeFrame));
         } else {
             repository.save(timeFrame);
-        }
-    }
-
-    @Transactional
-    public void postFrames() {
-        List<ApplicationTimeFrame> timeFrames = repository.findAll();
-
-        serviceWebApi.postTimeFrames(timeFrames);
-
-        ApplicationTimeFrame activeTimeFrame = timeFrames.stream().filter(ApplicationTimeFrame::isActive)
-                .findFirst().orElse(null);
-
-        if (activeTimeFrame != null) {
-            activeTimeFrame.setStartTime(activeTimeFrame.getEndTime());
-            repository.deleteAllByActive(false);
-            repository.save(activeTimeFrame);
-        } else {
-            repository.deleteAll();
         }
     }
 }

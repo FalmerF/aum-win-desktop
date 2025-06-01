@@ -17,4 +17,8 @@ public class ApplicationStatistic {
     private String exePath;
     private long seconds;
 
+    public void addSeconds(long seconds) {
+        this.seconds += seconds;
+    }
+
 }
