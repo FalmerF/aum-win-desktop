@@ -3,6 +3,7 @@ package ru.ilug.aumwindesktop.web;
 import javafx.application.Platform;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,6 +23,7 @@ public class ServiceWebApi {
     private String serviceUrl;
 
     @EventListener
+    @Order(0)
     public void onAuthStatusUpdate(AuthStatusUpdateEvent event) {
         if (event.isAuthorized()) {
             webClient = WebClient.builder()

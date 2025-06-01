@@ -2,9 +2,12 @@ package ru.ilug.aumwindesktop.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationInfo;
+import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
 import ru.ilug.aumwindesktop.util.WindowsApplicationUtil;
 import ru.ilug.aumwindesktop.web.ServiceWebApi;
 
@@ -19,6 +22,12 @@ public class ApplicationMonitorService {
     private final UserService userService;
     private final ServiceWebApi serviceWebApi;
     private final UIService uiService;
+
+    @EventListener(AuthStatusUpdateEvent.class)
+    @Order(1)
+    public void onAuthStatusUpdate() {
+        updateStatistics();
+    }
 
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.SECONDS)
     public void tick() {
@@ -35,7 +44,7 @@ public class ApplicationMonitorService {
         }
     }
 
-    @Scheduled(fixedRate = 15, initialDelay = 5, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedRate = 15, timeUnit = TimeUnit.SECONDS)
     public void updateStatistics() {
         if (userService.isAuthorized() && uiService.isShowing()) {
             serviceWebApi.getStatistics()
