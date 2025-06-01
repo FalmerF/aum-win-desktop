@@ -121,7 +121,7 @@ public class UIService {
                 super.updateItem(value, empty);
 
                 if (empty || value == null) {
-                    setText(TimeUtil.formatSeconds(0));
+                    setText(null);
                 } else {
                     setText(TimeUtil.formatSeconds(value));
                 }
