@@ -39,8 +39,7 @@ public class UserService {
                 .build();
     }
 
-    @EventListener(ContextRefreshedEvent.class)
-    public void onContextRefreshed() {
+    public void onApplicationLaunched() {
         setToken(loadTokenFromSecureFile());
     }
 

@@ -28,7 +28,7 @@ public class AuthorizationFlowService {
 
     private boolean active;
 
-    public AuthorizationFlowService(AuthCodeCallbackServer callbackServer, UserService userService, UIService uiService) {
+    public AuthorizationFlowService(AuthCodeCallbackServer callbackServer, UserService userService) {
         this.callbackServer = callbackServer;
         this.userService = userService;
 

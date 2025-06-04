@@ -1,6 +1,5 @@
-package ru.ilug.aumwindesktop.service;
+package ru.ilug.aumwindesktop.ui;
 
-import jakarta.annotation.PostConstruct;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,47 +17,39 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.data.model.User;
-import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
+import ru.ilug.aumwindesktop.service.AuthorizationFlowService;
 import ru.ilug.aumwindesktop.util.TimeUtil;
 
 import java.util.List;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class UIService {
+public class MainScene extends Scene {
 
     private final ApplicationContext context;
-    private final Stage primaryStage;
-    private final Scene scene;
 
-    private VBox header;
-    private TableView<ApplicationStatistic> tableView;
+    private final VBox rootBox;
+    private final VBox header;
+    private final TableView<ApplicationStatistic> tableView;
 
-    @PostConstruct
-    public void init() {
-        VBox root = new VBox();
+    public MainScene(ApplicationContext context) {
+        super(new VBox(), 800, 600);
 
-        header = createHeader(root);
-        tableView = createStatisticTable(root);
+        this.context = context;
 
-        root.getChildren().addAll(header, tableView);
+        rootBox = (VBox) getRoot();
 
-        Platform.runLater(() -> scene.setRoot(root));
+        header = createHeader();
+        tableView = createStatisticTable();
+
+        rootBox.getChildren().addAll(header, tableView);
     }
 
-    private VBox createHeader(VBox root) {
+    private VBox createHeader() {
         VBox header = new VBox();
         header.setPadding(new Insets(10));
-        header.prefWidthProperty().bind(root.widthProperty());
+        header.prefWidthProperty().bind(rootBox.widthProperty());
         header.setAlignment(Pos.CENTER_RIGHT);
         header.setStyle("-fx-background-color: -color-base-1;");
 
@@ -102,10 +93,10 @@ public class UIService {
     }
 
     @SuppressWarnings("unchecked")
-    private TableView<ApplicationStatistic> createStatisticTable(VBox root) {
+    private TableView<ApplicationStatistic> createStatisticTable() {
         TableView<ApplicationStatistic> tableView = new TableView<>();
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tableView.prefWidthProperty().bind(root.widthProperty());
+        tableView.prefWidthProperty().bind(rootBox.widthProperty());
 
         TableColumn<ApplicationStatistic, String> pathColumn = new TableColumn<>("Application");
         pathColumn.setCellValueFactory(new PropertyValueFactory<>("exePath"));
@@ -136,11 +127,6 @@ public class UIService {
         return tableView;
     }
 
-    @EventListener
-    public void onAuthStatusUpdate(AuthStatusUpdateEvent event) {
-        Platform.runLater(() -> updateHeaderState(event.isAuthorized(), event.getUser()));
-    }
-
     public void updateHeaderState(boolean authorized, User user) {
         header.getChildren().clear();
 
@@ -157,9 +143,5 @@ public class UIService {
             tableView.getItems().setAll(list);
             tableView.sort();
         });
-    }
-
-    public boolean isShowing() {
-        return primaryStage.isShowing();
     }
 }

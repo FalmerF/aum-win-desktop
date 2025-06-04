@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationInfo;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
+import ru.ilug.aumwindesktop.ui.UIController;
 import ru.ilug.aumwindesktop.util.WindowsApplicationUtil;
 import ru.ilug.aumwindesktop.web.ServiceWebApi;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,7 @@ public class ApplicationMonitorService {
     private final ApplicationTimeFrameService applicationTimeFrameService;
     private final UserService userService;
     private final ServiceWebApi serviceWebApi;
-    private final UIService uiService;
+    private final UIController uiController;
 
     private List<ApplicationStatistic> statistics = Collections.emptyList();
 
@@ -57,12 +57,12 @@ public class ApplicationMonitorService {
 
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.SECONDS)
     public void updateStatistics() {
-        if (!uiService.isShowing()) {
+        if (!uiController.isShowing()) {
             return;
         }
 
         List<ApplicationStatistic> statistics = applicationTimeFrameService.addLocalStatistics(this.statistics);
-        uiService.updateStatisticsTable(statistics);
+        uiController.updateStatisticsTable(statistics);
     }
 
 }
