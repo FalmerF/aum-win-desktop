@@ -61,6 +61,7 @@ public class TrayController {
         exitItem.addActionListener(e -> {
             Platform.exit();
             tray.remove(trayIcon);
+            applicationContextFuture.thenAccept(SpringApplication::exit);
         });
 
         popup.add(showItem);
@@ -73,7 +74,6 @@ public class TrayController {
         Platform.runLater(() -> {
             stage.hide();
             Platform.setImplicitExit(false);
-            applicationContextFuture.thenAccept(SpringApplication::exit);
         });
     }
 
