@@ -1,4 +1,4 @@
-package ru.ilug.aumwindesktop.ui;
+package ru.ilug.aumwindesktop.ui.scene;
 
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.ilug.aumwindesktop.data.model.ApplicationInfo;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
-import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
+import ru.ilug.aumwindesktop.event.application.AuthStatusUpdateEvent;
 import ru.ilug.aumwindesktop.ui.UIController;
 import ru.ilug.aumwindesktop.util.WindowsApplicationUtil;
 import ru.ilug.aumwindesktop.web.ServiceWebApi;

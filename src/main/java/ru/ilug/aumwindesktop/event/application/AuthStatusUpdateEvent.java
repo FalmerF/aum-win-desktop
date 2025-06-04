@@ -1,4 +1,4 @@
-package ru.ilug.aumwindesktop.event;
+package ru.ilug.aumwindesktop.event.application;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;

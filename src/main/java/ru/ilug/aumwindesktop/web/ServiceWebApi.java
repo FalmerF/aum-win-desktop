@@ -1,6 +1,5 @@
 package ru.ilug.aumwindesktop.web;
 
-import javafx.application.Platform;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
@@ -10,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.data.model.ApplicationTimeFrame;
-import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
+import ru.ilug.aumwindesktop.event.application.AuthStatusUpdateEvent;
 
 import java.util.List;
 

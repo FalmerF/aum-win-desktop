@@ -4,13 +4,11 @@ import com.sun.jna.platform.win32.Crypt32Util;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.ilug.aumwindesktop.data.model.User;
-import ru.ilug.aumwindesktop.event.AuthStatusUpdateEvent;
+import ru.ilug.aumwindesktop.event.application.AuthStatusUpdateEvent;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

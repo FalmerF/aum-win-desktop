@@ -1,4 +1,4 @@
-package ru.ilug.aumwindesktop.ui;
+package ru.ilug.aumwindesktop.ui.scene;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -6,31 +6,26 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
-import ru.ilug.aumwindesktop.data.model.User;
-import ru.ilug.aumwindesktop.service.AuthorizationFlowService;
+import ru.ilug.aumwindesktop.ui.component.UserComponent;
 import ru.ilug.aumwindesktop.util.TimeUtil;
 
 import java.util.List;
 
+@Slf4j
 public class MainScene extends Scene {
 
     private final ApplicationContext context;
 
     private final VBox rootBox;
-    private final VBox header;
     private final TableView<ApplicationStatistic> tableView;
 
     public MainScene(ApplicationContext context) {
@@ -40,7 +35,7 @@ public class MainScene extends Scene {
 
         rootBox = (VBox) getRoot();
 
-        header = createHeader();
+        VBox header = createHeader();
         tableView = createStatisticTable();
 
         rootBox.getChildren().addAll(header, tableView);
@@ -53,43 +48,12 @@ public class MainScene extends Scene {
         header.setAlignment(Pos.CENTER_RIGHT);
         header.setStyle("-fx-background-color: -color-base-1;");
 
+        UserComponent userComponent = context.getBean(UserComponent.class);
+        userComponent.setAlignment(Pos.CENTER_LEFT);
+
+        header.getChildren().addAll(userComponent);
+
         return header;
-    }
-
-    private Button createLoginButton() {
-        Button button = new Button("Login via GitHub");
-        button.setDefaultButton(true);
-        button.setAlignment(Pos.CENTER_RIGHT);
-        button.setOnMouseClicked(event -> {
-            AuthorizationFlowService authFlow = context.getBean(AuthorizationFlowService.class);
-            authFlow.start();
-
-            button.setDisable(true);
-        });
-
-        return button;
-    }
-
-    private HBox createAvatar(User user) {
-        Text name = new Text(user.getName());
-
-        ImageView imageView = new ImageView(user.getAvatarUrl());
-        imageView.setFitWidth(30);
-        imageView.setFitHeight(30);
-
-        Circle clip = new Circle();
-        clip.setRadius(Math.min(imageView.getFitWidth(), imageView.getFitHeight()) / 2);
-        clip.setCenterX(imageView.getFitWidth() / 2);
-        clip.setCenterY(imageView.getFitHeight() / 2);
-
-        imageView.setClip(clip);
-
-        HBox hbox = new HBox();
-        hbox.setAlignment(Pos.CENTER_RIGHT);
-        hbox.setSpacing(8);
-        hbox.getChildren().addAll(name, imageView);
-
-        return hbox;
     }
 
     @SuppressWarnings("unchecked")
@@ -125,16 +89,6 @@ public class MainScene extends Scene {
         VBox.setVgrow(tableView, Priority.ALWAYS);
 
         return tableView;
-    }
-
-    public void updateHeaderState(boolean authorized, User user) {
-        header.getChildren().clear();
-
-        if (authorized) {
-            header.getChildren().add(createAvatar(user));
-        } else {
-            header.getChildren().add(createLoginButton());
-        }
     }
 
     public void updateStatisticsTable(List<ApplicationStatistic> statistics) {
