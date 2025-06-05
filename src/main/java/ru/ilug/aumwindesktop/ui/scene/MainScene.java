@@ -8,11 +8,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
@@ -46,35 +44,40 @@ public class MainScene extends Scene {
 
     private VBox createSidePanel() {
         VBox sidePanel = new VBox();
-        sidePanel.setPadding(new Insets(8));
-        sidePanel.setSpacing(8);
         sidePanel.prefHeightProperty().bind(rootBox.heightProperty());
         sidePanel.setMinWidth(100);
         sidePanel.setMaxWidth(200);
+        sidePanel.setPrefWidth(200);
         sidePanel.setStyle("-fx-background-color: -color-base-1;");
 
-        VBox categoriesBox = new VBox();
-        categoriesBox.prefWidthProperty().bind(sidePanel.widthProperty());
-        VBox.setVgrow(categoriesBox, Priority.ALWAYS);
+        VBox navigationBox = new VBox();
+        navigationBox.prefWidthProperty().bind(sidePanel.widthProperty());
+        VBox.setVgrow(navigationBox, Priority.ALWAYS);
 
         for (int i = 0; i < 5; i++) {
-            Button categoryButton = createButtonWithIcon("Graph " + i, "/graph_1.png");
-            categoryButton.prefWidthProperty().bind(categoriesBox.widthProperty());
-            categoriesBox.getChildren().addAll(categoryButton);
+            Button navigationButton = createButtonWithIcon("Graph " + i, "/graph_1.png");
+            navigationButton.prefWidthProperty().bind(navigationBox.widthProperty());
+            navigationButton.getStyleClass().addAll("navigation-button");
+            navigationBox.getChildren().addAll(navigationButton);
 
             if (i == 0) {
-                categoryButton.getStyleClass().remove("flat");
-                categoryButton.setDisable(true);
+                navigationButton.setDisable(true);
             }
         }
 
         UserComponent userComponent = context.getBean(UserComponent.class);
         userComponent.setAlignment(Pos.CENTER_LEFT);
 
+        HBox userBox = new HBox(userComponent);
+        userBox.setPadding(new Insets(8));
+
         Button settingsButton = createButtonWithIcon("Settings", "/settings_white.png");
         settingsButton.prefWidthProperty().bind(sidePanel.widthProperty());
 
-        sidePanel.getChildren().addAll(userComponent, categoriesBox, settingsButton);
+        HBox settingsBox = new HBox(settingsButton);
+        settingsBox.setPadding(new Insets(8));
+
+        sidePanel.getChildren().addAll(userBox, navigationBox, settingsBox);
 
         return sidePanel;
     }

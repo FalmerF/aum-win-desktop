@@ -3,6 +3,7 @@ package ru.ilug.aumwindesktop.ui;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +12,13 @@ import org.springframework.context.event.EventListener;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
 import ru.ilug.aumwindesktop.event.application.AuthStatusUpdateEvent;
 import ru.ilug.aumwindesktop.event.ui.UserUpdateEvent;
+import ru.ilug.aumwindesktop.ui.component.SceneKind;
 import ru.ilug.aumwindesktop.ui.scene.LoadingScene;
 import ru.ilug.aumwindesktop.ui.scene.MainScene;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -22,14 +26,18 @@ public class UIController {
 
     private final Stage stage;
 
-    private MainScene mainScene;
+    private final Map<SceneKind, Scene> sceneMap = new HashMap<>();
+
+    private final String styles;
 
     public UIController(Stage stage) {
         this.stage = stage;
         setupStage();
 
-        LoadingScene loadingScene = new LoadingScene();
-        stage.setScene(loadingScene);
+        styles = loadStyles();
+
+        registerScene(SceneKind.LOADING, new LoadingScene());
+        showScene(SceneKind.LOADING);
 
         stage.show();
     }
@@ -45,16 +53,33 @@ public class UIController {
         }
     }
 
-    public void setApplicationContext(ConfigurableApplicationContext context) {
-        mainScene = new MainScene(context);
+    private String loadStyles() {
+        return Objects.requireNonNull(getClass().getResource("/css/styles.css")).toExternalForm();
+    }
 
-        Platform.runLater(() -> {
-            stage.setScene(mainScene);
-        });
+    private void registerScene(SceneKind kind, Scene scene) {
+        scene.getStylesheets().add(styles);
+
+        sceneMap.put(kind, scene);
+    }
+
+    public void showScene(SceneKind kind) {
+        Scene scene = sceneMap.get(kind);
+
+        if (scene == null) {
+            throw new RuntimeException(String.format("Scene with kind %s not found", kind));
+        }
+
+        stage.setScene(scene);
+    }
+
+    public void setApplicationContext(ConfigurableApplicationContext context) {
+        registerScene(SceneKind.MAIN, new MainScene(context));
+        Platform.runLater(() -> showScene(SceneKind.MAIN));
     }
 
     public void updateStatisticsTable(List<ApplicationStatistic> statistics) {
-        mainScene.updateStatisticsTable(statistics);
+        ((MainScene) sceneMap.get(SceneKind.MAIN)).updateStatisticsTable(statistics);
     }
 
     public boolean isShowing() {
@@ -64,7 +89,11 @@ public class UIController {
     @EventListener
     public void onAuthStatusUpdateEvent(AuthStatusUpdateEvent event) {
         UserUpdateEvent userUpdateEvent = new UserUpdateEvent(event.getUser());
-        Platform.runLater(() -> fireEvent(mainScene.getRoot(), userUpdateEvent));
+        Platform.runLater(() -> {
+            for (Scene scene : sceneMap.values()) {
+                fireEvent(scene.getRoot(), userUpdateEvent);
+            }
+        });
     }
 
     private void fireEvent(Node node, UserUpdateEvent event) {
