@@ -6,12 +6,14 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
@@ -19,48 +21,89 @@ import ru.ilug.aumwindesktop.ui.component.UserComponent;
 import ru.ilug.aumwindesktop.util.TimeUtil;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 public class MainScene extends Scene {
 
     private final ApplicationContext context;
 
-    private final VBox rootBox;
+    private final HBox rootBox;
     private final TableView<ApplicationStatistic> tableView;
 
     public MainScene(ApplicationContext context) {
-        super(new VBox(), 800, 600);
+        super(new HBox(), 800, 600);
 
         this.context = context;
 
-        rootBox = (VBox) getRoot();
+        rootBox = (HBox) getRoot();
 
-        VBox header = createHeader();
+        VBox sidePanel = createSidePanel();
         tableView = createStatisticTable();
 
-        rootBox.getChildren().addAll(header, tableView);
+        rootBox.getChildren().addAll(sidePanel, tableView);
     }
 
-    private VBox createHeader() {
-        VBox header = new VBox();
-        header.setPadding(new Insets(10));
-        header.prefWidthProperty().bind(rootBox.widthProperty());
-        header.setAlignment(Pos.CENTER_RIGHT);
-        header.setStyle("-fx-background-color: -color-base-1;");
+    private VBox createSidePanel() {
+        VBox sidePanel = new VBox();
+        sidePanel.setPadding(new Insets(8));
+        sidePanel.setSpacing(8);
+        sidePanel.prefHeightProperty().bind(rootBox.heightProperty());
+        sidePanel.setMinWidth(100);
+        sidePanel.setMaxWidth(200);
+        sidePanel.setStyle("-fx-background-color: -color-base-1;");
+
+        VBox categoriesBox = new VBox();
+        categoriesBox.prefWidthProperty().bind(sidePanel.widthProperty());
+        VBox.setVgrow(categoriesBox, Priority.ALWAYS);
+
+        for (int i = 0; i < 5; i++) {
+            Button categoryButton = createButtonWithIcon("Graph " + i, "/graph_1.png");
+            categoryButton.prefWidthProperty().bind(categoriesBox.widthProperty());
+            categoriesBox.getChildren().addAll(categoryButton);
+
+            if (i == 0) {
+                categoryButton.getStyleClass().remove("flat");
+                categoryButton.setDisable(true);
+            }
+        }
 
         UserComponent userComponent = context.getBean(UserComponent.class);
         userComponent.setAlignment(Pos.CENTER_LEFT);
 
-        header.getChildren().addAll(userComponent);
+        Button settingsButton = createButtonWithIcon("Settings", "/settings_white.png");
+        settingsButton.prefWidthProperty().bind(sidePanel.widthProperty());
 
-        return header;
+        sidePanel.getChildren().addAll(userComponent, categoriesBox, settingsButton);
+
+        return sidePanel;
+    }
+
+    private Button createButtonWithIcon(String text, String icon) {
+        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(icon)));
+        ImageView imageView = new ImageView(image);
+        imageView.setFitWidth(24);
+        imageView.setFitHeight(24);
+
+        Rectangle overlay = new Rectangle(imageView.getFitWidth(), imageView.getFitHeight());
+        overlay.setStyle("-fx-fill: -color-base-9;");
+        overlay.setClip(imageView);
+
+        Button button = new Button(text);
+        button.getStyleClass().addAll("flat");
+        button.setPrefHeight(32);
+        button.setGraphic(overlay);
+        button.setContentDisplay(ContentDisplay.LEFT);
+        button.setAlignment(Pos.CENTER_LEFT);
+
+        return button;
     }
 
     @SuppressWarnings("unchecked")
     private TableView<ApplicationStatistic> createStatisticTable() {
         TableView<ApplicationStatistic> tableView = new TableView<>();
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        tableView.prefWidthProperty().bind(rootBox.widthProperty());
+        tableView.prefHeightProperty().bind(rootBox.heightProperty());
 
         TableColumn<ApplicationStatistic, String> pathColumn = new TableColumn<>("Application");
         pathColumn.setCellValueFactory(new PropertyValueFactory<>("exePath"));
@@ -86,7 +129,7 @@ public class MainScene extends Scene {
         tableView.getSortOrder().add(timeColumn);
         tableView.getColumns().addAll(pathColumn, timeColumn);
 
-        VBox.setVgrow(tableView, Priority.ALWAYS);
+        HBox.setHgrow(tableView, Priority.ALWAYS);
 
         return tableView;
     }

@@ -1,5 +1,6 @@
 package ru.ilug.aumwindesktop.ui.component;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -25,7 +26,10 @@ public class UserComponent extends HBox {
     public UserComponent(ApplicationContext context) {
         this.context = context;
 
+        setPrefHeight(32);
         setSpacing(8);
+        setPadding(new Insets(4));
+
         addEventHandler(UserUpdateEvent.EVENT_TYPE, event -> refresh(event.getUser()));
     }
 
@@ -40,7 +44,6 @@ public class UserComponent extends HBox {
     private Button createLoginButton() {
         Button button = new Button("Login via GitHub");
         button.setDefaultButton(true);
-        button.setAlignment(Pos.CENTER_RIGHT);
         button.setOnMouseClicked(event -> {
             AuthorizationFlowService authFlow = context.getBean(AuthorizationFlowService.class);
             authFlow.start();
@@ -55,8 +58,8 @@ public class UserComponent extends HBox {
         Text name = new Text(user.getName());
 
         ImageView imageView = new ImageView(user.getAvatarUrl());
-        imageView.setFitWidth(30);
-        imageView.setFitHeight(30);
+        imageView.setFitWidth(32);
+        imageView.setFitHeight(32);
 
         Circle clip = new Circle();
         clip.setRadius(Math.min(imageView.getFitWidth(), imageView.getFitHeight()) / 2);
