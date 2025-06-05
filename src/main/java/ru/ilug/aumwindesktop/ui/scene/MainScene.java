@@ -8,18 +8,18 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
-import javafx.scene.shape.Rectangle;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
+import ru.ilug.aumwindesktop.ui.UIController;
+import ru.ilug.aumwindesktop.ui.component.SceneKind;
 import ru.ilug.aumwindesktop.ui.component.UserComponent;
+import ru.ilug.aumwindesktop.util.ComponentsUtil;
 import ru.ilug.aumwindesktop.util.TimeUtil;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 public class MainScene extends Scene {
@@ -55,7 +55,7 @@ public class MainScene extends Scene {
         VBox.setVgrow(navigationBox, Priority.ALWAYS);
 
         for (int i = 0; i < 5; i++) {
-            Button navigationButton = createButtonWithIcon("Graph " + i, "/graph_1.png");
+            Button navigationButton = ComponentsUtil.createButtonWithIcon("Graph " + i, "/img/graph_1.png");
             navigationButton.prefWidthProperty().bind(navigationBox.widthProperty());
             navigationButton.getStyleClass().addAll("navigation-button");
             navigationBox.getChildren().addAll(navigationButton);
@@ -65,14 +65,21 @@ public class MainScene extends Scene {
             }
         }
 
-        UserComponent userComponent = context.getBean(UserComponent.class);
+        UserComponent userComponent = new UserComponent(context);
         userComponent.setAlignment(Pos.CENTER_LEFT);
 
         HBox userBox = new HBox(userComponent);
         userBox.setPadding(new Insets(8));
 
-        Button settingsButton = createButtonWithIcon("Settings", "/settings_white.png");
+        Button settingsButton = ComponentsUtil.createButtonWithIcon("Settings", "/img/settings.png");
         settingsButton.prefWidthProperty().bind(sidePanel.widthProperty());
+        settingsButton.setOnMouseClicked(event -> {
+            if (event.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+
+            context.getBean(UIController.class).showScene(SceneKind.SETTINGS);
+        });
 
         HBox settingsBox = new HBox(settingsButton);
         settingsBox.setPadding(new Insets(8));
@@ -80,26 +87,6 @@ public class MainScene extends Scene {
         sidePanel.getChildren().addAll(userBox, navigationBox, settingsBox);
 
         return sidePanel;
-    }
-
-    private Button createButtonWithIcon(String text, String icon) {
-        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(icon)));
-        ImageView imageView = new ImageView(image);
-        imageView.setFitWidth(24);
-        imageView.setFitHeight(24);
-
-        Rectangle overlay = new Rectangle(imageView.getFitWidth(), imageView.getFitHeight());
-        overlay.setStyle("-fx-fill: -color-base-9;");
-        overlay.setClip(imageView);
-
-        Button button = new Button(text);
-        button.getStyleClass().addAll("flat");
-        button.setPrefHeight(32);
-        button.setGraphic(overlay);
-        button.setContentDisplay(ContentDisplay.LEFT);
-        button.setAlignment(Pos.CENTER_LEFT);
-
-        return button;
     }
 
     @SuppressWarnings("unchecked")

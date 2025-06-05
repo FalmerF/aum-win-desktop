@@ -52,6 +52,7 @@ public class UserService {
 
     public void setToken(String token) {
         this.token = token;
+        this.user = null;
 
         if (token != null) {
             updateUserInformation();
@@ -90,8 +91,6 @@ public class UserService {
     }
 
     private void updateUserInformation() {
-        user = null;
-
         try {
             user = githubClient.get()
                     .uri("/user")
@@ -105,6 +104,10 @@ public class UserService {
         }
     }
 
+    public void logout() {
+        invalidateToken();
+    }
+
     private void invalidateToken() {
         if (Files.exists(TOKEN_PATH)) {
             try {
@@ -113,7 +116,6 @@ public class UserService {
             }
         }
 
-        user = null;
         setToken(null);
     }
 }

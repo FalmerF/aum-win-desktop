@@ -1,7 +1,6 @@
 package ru.ilug.aumwindesktop.ui.component;
 
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
@@ -10,15 +9,11 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.ilug.aumwindesktop.data.model.User;
 import ru.ilug.aumwindesktop.event.ui.UserUpdateEvent;
 import ru.ilug.aumwindesktop.service.AuthorizationFlowService;
 
 @Slf4j
-@Component
-@Scope("prototype")
 public class UserComponent extends HBox {
 
     private final ApplicationContext context;

@@ -15,6 +15,7 @@ import ru.ilug.aumwindesktop.event.ui.UserUpdateEvent;
 import ru.ilug.aumwindesktop.ui.component.SceneKind;
 import ru.ilug.aumwindesktop.ui.scene.LoadingScene;
 import ru.ilug.aumwindesktop.ui.scene.MainScene;
+import ru.ilug.aumwindesktop.ui.scene.SettingsScene;
 
 import java.util.HashMap;
 import java.util.List;
@@ -74,8 +75,13 @@ public class UIController {
     }
 
     public void setApplicationContext(ConfigurableApplicationContext context) {
-        registerScene(SceneKind.MAIN, new MainScene(context));
-        Platform.runLater(() -> showScene(SceneKind.MAIN));
+        try {
+            registerScene(SceneKind.MAIN, new MainScene(context));
+            registerScene(SceneKind.SETTINGS, new SettingsScene(context));
+            Platform.runLater(() -> showScene(SceneKind.MAIN));
+        } catch (Exception e) {
+            log.error("Error on init scenes", e);
+        }
     }
 
     public void updateStatisticsTable(List<ApplicationStatistic> statistics) {
