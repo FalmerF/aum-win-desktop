@@ -54,16 +54,12 @@ public class MainScene extends Scene {
         navigationBox.prefWidthProperty().bind(sidePanel.widthProperty());
         VBox.setVgrow(navigationBox, Priority.ALWAYS);
 
-        for (int i = 0; i < 5; i++) {
-            Button navigationButton = ComponentsUtil.createButtonWithIcon("Graph " + i, "/img/graph_1.png");
-            navigationButton.prefWidthProperty().bind(navigationBox.widthProperty());
-            navigationButton.getStyleClass().addAll("navigation-button");
-            navigationBox.getChildren().addAll(navigationButton);
+        Button tableNavButton = createNavigationButton(navigationBox, "Table", "/img/table.png");
+        tableNavButton.setDisable(true);
 
-            if (i == 0) {
-                navigationButton.setDisable(true);
-            }
-        }
+        Button chartNavButton = createNavigationButton(navigationBox, "Chart", "/img/graph_1.png");
+
+        navigationBox.getChildren().addAll(tableNavButton, chartNavButton);
 
         UserComponent userComponent = new UserComponent(context);
         userComponent.setAlignment(Pos.CENTER_LEFT);
@@ -87,6 +83,13 @@ public class MainScene extends Scene {
         sidePanel.getChildren().addAll(userBox, navigationBox, settingsBox);
 
         return sidePanel;
+    }
+
+    private Button createNavigationButton(VBox navigationBox, String name, String icon) {
+        Button navigationButton = ComponentsUtil.createButtonWithIcon(name, icon);
+        navigationButton.prefWidthProperty().bind(navigationBox.widthProperty());
+        navigationButton.getStyleClass().addAll("navigation-button");
+        return navigationButton;
     }
 
     @SuppressWarnings("unchecked")
