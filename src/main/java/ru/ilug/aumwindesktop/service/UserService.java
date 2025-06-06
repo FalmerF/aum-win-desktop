@@ -4,9 +4,11 @@ import com.sun.jna.platform.win32.Crypt32Util;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 import ru.ilug.aumwindesktop.data.model.User;
 import ru.ilug.aumwindesktop.event.application.AuthStatusUpdateEvent;
 
@@ -34,6 +36,10 @@ public class UserService {
 
         this.githubClient = WebClient.builder()
                 .baseUrl("https://api.github.com")
+                .defaultStatusHandler(code -> code == HttpStatus.UNAUTHORIZED, clientResponse -> {
+                    logout();
+                    return Mono.error(new RuntimeException("Unauthorized exception, token is invalid, logout"));
+                })
                 .build();
     }
 
