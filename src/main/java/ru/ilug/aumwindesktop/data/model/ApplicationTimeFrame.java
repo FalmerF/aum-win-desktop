@@ -1,14 +1,14 @@
 package ru.ilug.aumwindesktop.data.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 @Builder
 @NoArgsConstructor
@@ -17,6 +17,8 @@ import lombok.experimental.Accessors;
 public class ApplicationTimeFrame {
 
     @Id
+    @GeneratedValue
+    private long id;
     private String exePath;
     private String windowsClass;
     private long startTime;
