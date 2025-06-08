@@ -26,6 +26,8 @@ public class AuthCodeCallbackServer {
 
     @Value("${application.auth.client-id}")
     private String clientId;
+    @Value("${application.auth.url}")
+    private String authUrl;
 
     public AuthCodeCallback start(String codeChallenge) throws Exception {
         CompletableFuture<String> codeFuture = new CompletableFuture<>();
@@ -69,7 +71,8 @@ public class AuthCodeCallbackServer {
 
     private URI buildAuthUri(String redirectUri, String codeChallenge) {
         return UriComponentsBuilder
-                .fromUriString("http://localhost:9000/oauth2/authorize")
+                .fromUriString(authUrl)
+                .path("/oauth2/authorize")
                 .queryParam("response_type", "code")
                 .queryParam("client_id", clientId)
                 .queryParam("redirect_uri", redirectUri)
