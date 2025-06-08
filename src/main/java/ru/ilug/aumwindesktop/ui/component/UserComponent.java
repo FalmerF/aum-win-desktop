@@ -37,7 +37,7 @@ public class UserComponent extends HBox {
     }
 
     private Button createLoginButton() {
-        Button button = new Button("Login via GitHub");
+        Button button = new Button("Sign in");
         button.setDefaultButton(true);
         button.setOnMouseClicked(event -> {
             AuthorizationFlowService authFlow = context.getBean(AuthorizationFlowService.class);
