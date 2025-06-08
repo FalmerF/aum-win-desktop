@@ -5,10 +5,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import ru.ilug.aumwindesktop.data.model.AccessTokenRequest;
 import ru.ilug.aumwindesktop.data.model.AccessTokenResponse;
 import ru.ilug.aumwindesktop.data.model.AuthCodeCallback;
+import ru.ilug.aumwindesktop.util.PkceUtil;
 import ru.ilug.aumwindesktop.web.AuthCodeCallbackServer;
 
 @Slf4j
@@ -19,21 +20,20 @@ public class AuthorizationFlowService {
     private final AuthCodeCallbackServer callbackServer;
     private final UserService userService;
 
-    private final WebClient githubAuthClient;
+    private final WebClient authServerClient;
 
-    @Value("${application.auth.github.client-id}")
+    @Value("${application.auth.client-id}")
     private String clientId;
-    @Value("${application.auth.github.client-secret}")
-    private String clientSecret;
 
     private boolean active;
 
-    public AuthorizationFlowService(AuthCodeCallbackServer callbackServer, UserService userService) {
+    public AuthorizationFlowService(AuthCodeCallbackServer callbackServer, UserService userService,
+                                    @Value("${application.auth.url}") String authUrl) {
         this.callbackServer = callbackServer;
         this.userService = userService;
 
-        githubAuthClient = WebClient.builder()
-                .baseUrl("https://github.com/login/oauth")
+        authServerClient = WebClient.builder()
+                .baseUrl(authUrl)
                 .build();
     }
 
@@ -45,11 +45,15 @@ public class AuthorizationFlowService {
 
         new Thread(() -> {
             try {
-                AuthCodeCallback codeCallback = callbackServer.start();
-                AccessTokenResponse response = exchangeCodeForToken(codeCallback);
+                String codeVerifier = PkceUtil.generateCodeVerifier();
+                String codeChallenge = PkceUtil.generateCodeChallenge(codeVerifier);
+
+                AuthCodeCallback codeCallback = callbackServer.start(codeChallenge);
+                AccessTokenResponse response = exchangeCodeForToken(codeCallback, codeVerifier);
                 userService.updateToken(response.getAccessToken());
             } catch (Exception e) {
                 log.error("Error on authorization", e);
+                userService.logout();
             } finally {
                 active = false;
                 callbackServer.stop();
@@ -57,17 +61,16 @@ public class AuthorizationFlowService {
         }).start();
     }
 
-    private AccessTokenResponse exchangeCodeForToken(AuthCodeCallback codeCallback) {
-        return githubAuthClient.post()
-                .uri("/access_token")
+    private AccessTokenResponse exchangeCodeForToken(AuthCodeCallback codeCallback, String codeVerifier) {
+        return authServerClient.post()
+                .uri("/oauth2/token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(
-                        AccessTokenRequest.builder()
-                                .clientId(clientId)
-                                .clientSecret(clientSecret)
-                                .code(codeCallback.getCode())
-                                .redirectUri(codeCallback.getRedirectUri())
-                                .build()
+                .body(
+                        BodyInserters.fromFormData("client_id", clientId)
+                                .with("code", codeCallback.getCode())
+                                .with("redirect_uri", codeCallback.getRedirectUri())
+                                .with("grant_type", "authorization_code")
+                                .with("code_verifier", codeVerifier)
                 )
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()

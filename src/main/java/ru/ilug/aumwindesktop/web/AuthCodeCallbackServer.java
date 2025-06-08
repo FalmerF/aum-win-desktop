@@ -24,17 +24,17 @@ public class AuthCodeCallbackServer {
 
     private HttpServer server;
 
-    @Value("${application.auth.github.client-id}")
+    @Value("${application.auth.client-id}")
     private String clientId;
 
-    public AuthCodeCallback start() throws Exception {
+    public AuthCodeCallback start(String codeChallenge) throws Exception {
         CompletableFuture<String> codeFuture = new CompletableFuture<>();
         this.server = createAndStartServer(codeFuture);
 
         int port = server.getAddress().getPort();
         String redirectUri = String.format("http://127.0.0.1:%s/login/oauth2/code", port);
 
-        URI authUri = buildAuthUri(redirectUri);
+        URI authUri = buildAuthUri(redirectUri, codeChallenge);
 
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             Desktop.getDesktop().browse(authUri);
@@ -67,14 +67,15 @@ public class AuthCodeCallbackServer {
         return server;
     }
 
-    private URI buildAuthUri(String redirectUri) {
+    private URI buildAuthUri(String redirectUri, String codeChallenge) {
         return UriComponentsBuilder
-                .fromUriString("https://github.com/login/oauth/authorize")
+                .fromUriString("http://localhost:9000/oauth2/authorize")
                 .queryParam("response_type", "code")
                 .queryParam("client_id", clientId)
                 .queryParam("redirect_uri", redirectUri)
                 .queryParam("scope", "openid profile")
-                .queryParam("state", "random-state")
+                .queryParam("code_challenge", codeChallenge)
+                .queryParam("code_challenge_method", "S256")
                 .build().toUri();
     }
 

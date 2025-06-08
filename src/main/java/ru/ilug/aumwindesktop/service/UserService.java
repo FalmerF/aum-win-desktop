@@ -1,8 +1,21 @@
 package ru.ilug.aumwindesktop.service;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.JWSKeySelector;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.sun.jna.platform.win32.Crypt32Util;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +29,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.ParseException;
 
 @Slf4j
 @Service
@@ -25,17 +39,19 @@ public class UserService {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    private final WebClient githubClient;
+    private final WebClient authServerClient;
+
+    private ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
 
     private String token;
     @Getter
     private User user;
 
-    public UserService(ApplicationEventPublisher eventPublisher) {
+    public UserService(ApplicationEventPublisher eventPublisher, @Value("${application.auth.url}") String authUrl) {
         this.eventPublisher = eventPublisher;
 
-        this.githubClient = WebClient.builder()
-                .baseUrl("https://api.github.com")
+        this.authServerClient = WebClient.builder()
+                .baseUrl(authUrl)
                 .defaultStatusHandler(code -> code == HttpStatus.UNAUTHORIZED, clientResponse -> {
                     logout();
                     return Mono.error(new RuntimeException("Unauthorized exception, token is invalid, logout"));
@@ -44,11 +60,11 @@ public class UserService {
     }
 
     public void onApplicationLaunched() {
-        setToken(loadTokenFromSecureFile());
+        validateAndSetToken(loadTokenFromSecureFile());
     }
 
     public void updateToken(String token) {
-        setToken(token);
+        validateAndSetToken(token);
         try {
             saveTokenToSecureFile();
         } catch (Exception e) {
@@ -56,16 +72,42 @@ public class UserService {
         }
     }
 
-    public void setToken(String token) {
-        this.token = token;
-        this.user = null;
-
-        if (token != null) {
-            updateUserInformation();
+    private void validateAndSetToken(String token) {
+        try {
+            user = validateTokenAndGetUser(token);
+            setToken(token);
+        } catch (Exception e) {
+            invalidateToken();
+            log.error("Error on validate token", e);
         }
+    }
 
+    private void setToken(String token) {
+        this.token = token;
         AuthStatusUpdateEvent event = new AuthStatusUpdateEvent(this, user, token, isAuthorized());
         eventPublisher.publishEvent(event);
+    }
+
+    private void invalidateToken() {
+        if (Files.exists(TOKEN_PATH)) {
+            try {
+                Files.delete(TOKEN_PATH);
+            } catch (Exception ignore) {
+            }
+        }
+
+        this.user = null;
+        setToken(null);
+    }
+
+    private User validateTokenAndGetUser(String token) throws ParseException, BadJOSEException, JOSEException {
+        ConfigurableJWTProcessor<SecurityContext> jwtProcessor = getJwtProcessor();
+
+        JWTClaimsSet claimsSet = jwtProcessor.process(token, null);
+        String name = claimsSet.getStringClaim("name");
+        String picture = claimsSet.getStringClaim("picture");
+
+        return new User(name, picture);
     }
 
     public boolean isAuthorized() {
@@ -96,32 +138,40 @@ public class UserService {
         }
     }
 
-    private void updateUserInformation() {
-        try {
-            user = githubClient.get()
-                    .uri("/user")
-                    .headers(headers -> headers.setBearerAuth(token))
-                    .accept(MediaType.APPLICATION_JSON)
-                    .retrieve()
-                    .bodyToMono(User.class)
-                    .block();
-        } catch (Exception e) {
-            log.error("Error on get user information", e);
-        }
-    }
-
     public void logout() {
         invalidateToken();
     }
 
-    private void invalidateToken() {
-        if (Files.exists(TOKEN_PATH)) {
-            try {
-                Files.delete(TOKEN_PATH);
-            } catch (Exception ignore) {
-            }
+    private ConfigurableJWTProcessor<SecurityContext> getJwtProcessor() throws ParseException {
+        if (jwtProcessor == null) {
+            jwtProcessor = createJwtProcessor();
         }
 
-        setToken(null);
+        return jwtProcessor;
+    }
+
+    private ConfigurableJWTProcessor<SecurityContext> createJwtProcessor() throws ParseException {
+        String jwkSetJson = getJWKS();
+
+        JWKSet jwkSet = JWKSet.parse(jwkSetJson);
+        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(jwkSet);
+
+        ConfigurableJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
+
+        JWSAlgorithm expectedJWSAlg = JWSAlgorithm.RS256;
+        JWSKeySelector<SecurityContext> keySelector =
+                new JWSVerificationKeySelector<>(expectedJWSAlg, jwkSource);
+        jwtProcessor.setJWSKeySelector(keySelector);
+
+        return jwtProcessor;
+    }
+
+    private String getJWKS() {
+        return authServerClient.get()
+                .uri("/oauth2/jwks")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
     }
 }

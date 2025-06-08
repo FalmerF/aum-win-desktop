@@ -1,15 +1,13 @@
 package ru.ilug.aumwindesktop.data.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class User {
 
-    private String login;
-    private long id;
     private String name;
-    @JsonProperty("avatar_url")
-    private String avatarUrl;
+    private String picture;
 
 }

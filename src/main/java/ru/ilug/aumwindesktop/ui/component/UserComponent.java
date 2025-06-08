@@ -52,7 +52,7 @@ public class UserComponent extends HBox {
     private Node[] createAvatar(User user) {
         Text name = new Text(user.getName());
 
-        ImageView imageView = new ImageView(user.getAvatarUrl());
+        ImageView imageView = new ImageView(user.getPicture());
         imageView.setFitWidth(32);
         imageView.setFitHeight(32);
 
