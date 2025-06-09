@@ -10,6 +10,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.ilug.aumwindesktop.service.UserService;
+import ru.ilug.aumwindesktop.ui.IUIController;
 import ru.ilug.aumwindesktop.ui.TrayController;
 import ru.ilug.aumwindesktop.ui.UIController;
 
@@ -21,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 public class AumWinDesktopApplication extends Application {
 
     private static String[] args;
-    private static UIController uiController;
+    private static IUIController uiController;
 
     public static void main(String[] args) {
         AumWinDesktopApplication.args = args;

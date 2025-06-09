@@ -9,7 +9,7 @@ import javafx.scene.layout.*;
 import org.springframework.context.ApplicationContext;
 import ru.ilug.aumwindesktop.event.ui.UserUpdateEvent;
 import ru.ilug.aumwindesktop.service.UserService;
-import ru.ilug.aumwindesktop.ui.UIController;
+import ru.ilug.aumwindesktop.ui.IUIController;
 import ru.ilug.aumwindesktop.ui.component.SceneKind;
 import ru.ilug.aumwindesktop.ui.component.UserComponent;
 import ru.ilug.aumwindesktop.util.ComponentsUtil;
@@ -35,7 +35,7 @@ public class SettingsScene extends Scene {
         backButton.setGraphicTextGap(-4);
         backButton.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                context.getBean(UIController.class).showScene(SceneKind.MAIN);
+                context.getBean(IUIController.class).showScene(SceneKind.MAIN);
             }
         });
 

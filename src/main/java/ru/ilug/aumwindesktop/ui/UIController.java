@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
-public class UIController {
+public class UIController implements IUIController {
 
     private final Stage stage;
 

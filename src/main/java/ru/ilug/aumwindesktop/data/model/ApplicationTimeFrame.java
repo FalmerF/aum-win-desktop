@@ -1,5 +1,6 @@
 package ru.ilug.aumwindesktop.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -18,6 +19,7 @@ public class ApplicationTimeFrame {
 
     @Id
     @GeneratedValue
+    @JsonIgnore
     private long id;
     private String exePath;
     private String windowsClass;

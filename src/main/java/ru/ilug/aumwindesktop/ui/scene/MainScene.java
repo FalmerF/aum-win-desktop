@@ -13,7 +13,7 @@ import javafx.scene.layout.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import ru.ilug.aumwindesktop.data.model.ApplicationStatistic;
-import ru.ilug.aumwindesktop.ui.UIController;
+import ru.ilug.aumwindesktop.ui.IUIController;
 import ru.ilug.aumwindesktop.ui.component.SceneKind;
 import ru.ilug.aumwindesktop.ui.component.UserComponent;
 import ru.ilug.aumwindesktop.util.ComponentsUtil;
@@ -74,7 +74,7 @@ public class MainScene extends Scene {
                 return;
             }
 
-            context.getBean(UIController.class).showScene(SceneKind.SETTINGS);
+            context.getBean(IUIController.class).showScene(SceneKind.SETTINGS);
         });
 
         HBox settingsBox = new HBox(settingsButton);

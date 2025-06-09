@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import ru.ilug.aumwindesktop.data.model.ApplicationTimeFrame;
 
 @Repository
-public interface ApplicationTimeFrameRepository extends JpaRepository<ApplicationTimeFrame, String> {
+public interface ApplicationTimeFrameRepository extends JpaRepository<ApplicationTimeFrame, Long> {
 
     ApplicationTimeFrame getApplicationTimeFrameByActive(boolean active);
 
