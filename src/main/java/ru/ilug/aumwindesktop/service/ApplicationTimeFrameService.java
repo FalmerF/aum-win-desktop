@@ -92,8 +92,11 @@ public class ApplicationTimeFrameService {
                 .build();
 
         if (prevTimeFrame != null) {
-            prevTimeFrame.setEndTime(timeMillis)
-                    .setActive(false);
+            prevTimeFrame.setActive(false);
+
+            if ((timeMillis - prevTimeFrame.getEndTime()) < 10000) {
+                prevTimeFrame.setEndTime(timeMillis);
+            }
 
             repository.saveAll(Arrays.asList(timeFrame, prevTimeFrame));
         } else {
