@@ -26,7 +26,14 @@ public class ApplicationTimeFrameService {
 
     @Transactional
     public void updateTime(@Nonnull ApplicationInfo applicationInfo) {
-        ApplicationTimeFrame activeTimeFrame = repository.getApplicationTimeFrameByActive(true);
+        List<ApplicationTimeFrame> activeTimeFrameList = repository.getApplicationTimeFrameByActive(true);
+        ApplicationTimeFrame activeTimeFrame = null;
+
+        if (activeTimeFrameList.size() == 1) {
+            activeTimeFrame = activeTimeFrameList.get(0);
+        } else {
+            invalidateAllTimeFrames(activeTimeFrameList);
+        }
 
         if (isTimeFrameActual(activeTimeFrame) && activeTimeFrame.getExePath().equals(applicationInfo.getExePath())) {
             extendTimeFrame(activeTimeFrame);
@@ -102,5 +109,10 @@ public class ApplicationTimeFrameService {
         } else {
             repository.save(timeFrame);
         }
+    }
+
+    private void invalidateAllTimeFrames(List<ApplicationTimeFrame> frames) {
+        frames.forEach(f -> f.setActive(false));
+        repository.saveAll(frames);
     }
 }
