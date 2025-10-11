@@ -57,7 +57,7 @@ public class MainScene extends Scene {
         Button tableNavButton = createNavigationButton(navigationBox, "Table", "/img/table.png");
         tableNavButton.setDisable(true);
 
-        Button chartNavButton = createNavigationButton(navigationBox, "Chart", "/img/graph_1.png");
+        Button chartNavButton = createNavigationButton(navigationBox, "Charts (Coming soon)", "/img/graph_1.png");
 
         navigationBox.getChildren().addAll(tableNavButton, chartNavButton);
 
