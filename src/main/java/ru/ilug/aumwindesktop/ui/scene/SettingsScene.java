@@ -67,6 +67,9 @@ public class SettingsScene extends Scene {
 
         contentBox.getChildren().addAll(backButton, userBox);
 
+        // TODO: Add theme switching
+        // TODO: Add languages
+
         addEventHandler(UserUpdateEvent.EVENT_TYPE, event -> logoutButton.setVisible(event.getUser() != null));
     }
 
